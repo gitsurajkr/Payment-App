@@ -1,6 +1,10 @@
 const mongoose = require('mongoose');
 
-mongoose.connect("mongodb+srv://Paytm-Payment:surajkr84@cluster0.vbdrsde.mongodb.net/paytm")
+mongoose.connect(process.env.MONGODB_URL, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+    useCreateIndex: true
+});
 const userSchema = new mongoose.Schema({
     username:{
         type : String,
