@@ -9,21 +9,27 @@ const { authMiddleware } = require("../middleware");
 
 
 const JWT_SECRET = process.env.JWT_KEY;
-console.log(JWT_SECRET)
+// console.log(JWT_SECRET)
 
 const signupBody = zod.object({
-    username: zod.string().email(),
-    password: zod.string().min(6),
     firstName: zod.string().min(3).max(50),
     lastName: zod.string().min(3).max(50),
+    username: zod.string().email(),
+    password: zod.string().min(6), 
+    
+     
+
 })
+
 
 router.post("/signup", async (req, res) => {
 
-    const { success } = signupBody.safeParse(req.body)
+    // console.log("signup body req", req.body)
 
+    const { success } = signupBody.safeParse(req.body)
+    // console.log("signup body success", success)
     if (!success) {
-        return res.status(404).json({
+        return res.status(400).json({
             message: "User Doesn't exist"
         })
     }
@@ -35,6 +41,7 @@ router.post("/signup", async (req, res) => {
     const existingUser = await User.findOne({
         username: req.body.username
     })
+    // console.log("existing user", existingUser)
     if (existingUser) {
         return res.status(400).send("Username already exists")
     }
@@ -44,7 +51,7 @@ router.post("/signup", async (req, res) => {
         firstName: req.body.firstName,
         lastName: req.body.lastName
     })
-
+    // console.log("user", user)
     const userId = user._id
 
     // -------create New Account-----------
@@ -53,9 +60,9 @@ router.post("/signup", async (req, res) => {
         userId,
         balance: 1 + Math.random() * 1000
     })
-
+    // console.log("JWT_SECRET", JWT_SECRET)
     const token = jwt.sign({ userId }, JWT_SECRET);
-
+    // console.log("token", token)
     res.json({
         message: "User created",
         token
@@ -129,17 +136,19 @@ router.get("/bulk", async (req, res) => {
     const users = await User.find({
         $or: [{
             firstName: {
-                "$regex": filter
+                $regex: filter,
+                $options: "i"
             }
         }, {
             lastName: {
-                "$regex": filter
+                $regex: filter,
+                $options: "i"
             }
         }]
     })
 
     res.json({
-        user: users.map(user =>({
+        users: users.map(user =>({
             username: user.username,
             firstName: user.firstName,
             lastName: user.lastName,

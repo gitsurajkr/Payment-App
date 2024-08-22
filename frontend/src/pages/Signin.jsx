@@ -13,7 +13,19 @@ export const Signin = () => {
                 <InputLabel placeholder="johndoe@gmail.com" label={"Email"}/>
                 <InputLabel placeholder="password" label={"Password"} type="password"/>
                 <div className="pt-4">
-                    <Button label={"Sign in"}/>
+                    <Button onClick={async()=>{
+                        try{
+                            const response = await axios.post("http://localhost:3000/api/v1/user/signin", {
+                                username,
+                                password
+                            });
+                            localStorage.setItem("token", response.data.token);
+                            navigate("/dashboard");
+                        } catch (error) {
+                            console.error("Error during signin:", error);
+                            alert("There was an issue with the signin. Please try again.");
+                        }
+                    }}  label={"Sign in"}/>
                 </div>
                 <BottomWarning label={"Don't have an account?"} buttonText={"Sign up"} to={"/signup"}/>
             </div>
