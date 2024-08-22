@@ -5,9 +5,11 @@ const router = express.Router();
 const zod = require("zod");
 const { User, Account } = require("../db");
 const jwt = require("jsonwebtoken");
-require('dotenv').config();
-const { JWT_SECRET } = require("../config");
-const  { authMiddleware } = require("../middleware");
+const { authMiddleware } = require("../middleware");
+
+
+const JWT_SECRET = process.env.JWT_KEY;
+console.log(JWT_SECRET)
 
 const signupBody = zod.object({
     username: zod.string().email(),
@@ -74,24 +76,30 @@ router.post("/signin", async (req, res) => {
         })
     }
     const user = await User.findOne({
-        username: req.body.username,
-        password: req.body.password
+        username: req.body.username
     })
+
+    if (user.password !== req.body.password) { 
+        return res.status(401).json({
+            message: "Invalid Password"
+        })
+    }
 
     if (user) {
         const token = jwt.sign({
             userId: user._id
         }, JWT_SECRET)
 
-        res.json({
+        return res.json({
             token: token
         })
-        return;
+    } else {
+        res.status(411).json({
+            message: "Error while logging in"
+        })
     }
 
-    res.status(411).json({
-        message: "Error while logging in"
-    })
+    
 })
 
 const updateBody = zod.object({
